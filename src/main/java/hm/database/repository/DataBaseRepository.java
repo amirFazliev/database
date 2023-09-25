@@ -22,9 +22,6 @@ public class DataBaseRepository {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
-    private final String sqlSchema = read("schema.sql");
-    private final String sqlData = read("data.sql");
-
     private static String read(String scriptFileName) {
         try (InputStream is = new ClassPathResource(scriptFileName).getInputStream();
              BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is))) {
