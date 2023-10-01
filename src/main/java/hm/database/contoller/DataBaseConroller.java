@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/")
@@ -21,7 +23,7 @@ public class DataBaseConroller {
     }
 
     @GetMapping("/products/fetch-product")
-    public String getProductName(@RequestParam("name") String name) throws SQLException {
+    public List<Map<String, Object>> getProductName(@RequestParam("name") String name) throws SQLException {
         return dataBaseRepository.getProductName(name);
     }
 }
