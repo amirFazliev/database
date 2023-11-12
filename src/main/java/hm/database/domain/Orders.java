@@ -1,15 +1,11 @@
 package hm.database.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 @ToString
 @Getter
 @Setter
-@Builder
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,7 +14,19 @@ public class Orders {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String date;
-    private int customerId;
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customers customer;
+
     private String productName;
     private int amount;
+
+    public void setCustomerId(int customerId) {
+        this.customer = new Customers();
+        this.customer.setId(customerId);
+    }
+
+    public int getCustomerId() {
+        return this.customer.getId();
+    }
 }

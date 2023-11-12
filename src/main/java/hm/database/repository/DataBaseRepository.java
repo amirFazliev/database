@@ -1,43 +1,52 @@
 package hm.database.repository;
 
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import hm.database.domain.Customers;
+import hm.database.domain.Orders;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Repository
 public class DataBaseRepository {
 
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    @PersistenceContext
+    private EntityManager entityManager;
 
-    public DataBaseRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    @Transactional
+    public void createCustomers (Customers customers) {
+        entityManager.persist(customers);
     }
 
-    private final String sqlQuery = read("query.sql");
-
-    private static String read(String scriptFileName) {
-        try (InputStream is = new ClassPathResource(scriptFileName).getInputStream();
-             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is))) {
-            return bufferedReader.lines().collect(Collectors.joining("\n"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    @Transactional
+    public void createOrders (Orders orders) {
+        Customers existingCustomer = entityManager.find(Customers.class, orders.getCustomerId());
+        if (existingCustomer != null) {
+            orders.setCustomer(existingCustomer);
+            entityManager.persist(orders);
+        } else {
+            System.out.println("error - no id");
         }
+
     }
 
-    public List<Map<String, Object>> getProductName(String name) {
-        MapSqlParameterSource map = new MapSqlParameterSource("name", name);
-        return namedParameterJdbcTemplate.queryForList(sqlQuery, map);
+    @Transactional
+    public List<Orders> getProductName(String name) {
+        var query = entityManager.createQuery(
+                "SELECT o " +
+                        "FROM Orders o " +
+                        "JOIN o.customer c " +
+                        "WHERE c.name = :name", Orders.class);
+        query.setParameter("name", name);
+        return query.getResultList();
+    }
+
+    @Transactional
+    public List<Customers> allCustomers() {
+        var query = entityManager.createQuery(
+                "SELECT customers from Customers customers", Customers.class);
+        return query.getResultList();
     }
 }
